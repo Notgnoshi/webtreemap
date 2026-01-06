@@ -126,8 +126,8 @@ body {
   font-family: sans-serif;
 }
 #treemap {
-  width: 800px;
-  height: 600px;
+  width: 1600px;
+  height: 1200px;
 }
 </style>
 <div id='treemap'></div>

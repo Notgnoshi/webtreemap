@@ -25,17 +25,36 @@ export interface Node {
   id?: string;
   /** size should be >= the sum of the children's size. */
   size: number;
+  /** If set, a CSS color to color the node by */
+  color?: string;
   /** children should be sorted by size in descending order. */
   children?: Node[];
   /** dom node will be created and associated with the data. */
   dom?: HTMLElement;
 }
 
+function randomPastelColor() {
+  // Unfortunately we can't seed Math.random with the tag word(s) for consistency, but this is fine
+  // for a PoC.
+  const hue = 360 * Math.random();
+  const saturation = 25 + 70 * Math.random();
+  const lightness = 85 + 10 * Math.random();
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
 /**
  * treeify converts an array of [path, size] pairs into a tree.
  * Paths are /-delimited ids.
+ *
+ * If colorize is given, it is an array of strings such that if a node's path contains that
+ * substring, it gets assigned a random pastel color.
  */
-export function treeify(data: Array<[string, number]>): Node {
+export function treeify(data: Array<[string, number]>, colorize?: Array<string>): Node {
+  let colors = new Map<string, string>();
+  for (const word of (colorize || [])) {
+    colors.set(word.toLowerCase(), randomPastelColor());
+  }
+
   const tree: Node = {size: 0};
   for (const [path, size] of data) {
     const parts = path.replace(/\/$/, '').split('/');
@@ -45,7 +64,14 @@ export function treeify(data: Array<[string, number]>): Node {
       if (!t.children) t.children = [];
       let child = t.children.find(c => c.id === id);
       if (!child) {
-        child = {id, size: 0};
+        let color = undefined;
+        colors.forEach((word_color, word) => {
+          if (path.toLowerCase().includes(word)) {
+            color = word_color;
+          }
+        });
+        child = {id, size: 0, color};
+
         t.children.push(child);
       }
       if (parts.length === 0) {

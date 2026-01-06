@@ -213,6 +213,10 @@ export class TreeMap {
     width: number,
     height: number
   ) {
+    if (node.color && node.dom) {
+      node.dom.style.backgroundColor = node.color;
+    }
+
     const total: number = node.size;
     const children = node.children;
     if (!children) return;

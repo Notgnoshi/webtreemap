@@ -49,7 +49,7 @@ async function readFile(path: string) {
 }
 
 /** Constructs a tree from an array of lines. */
-function treeFromLines(lines: string[]): tree.Node {
+function treeFromLines(lines: string[], colorize?: string[]): tree.Node {
   const data: Array<[string, number]> = [];
   for (const line of lines) {
     let [sizeStr, ...rest] = line.split(/\s+/);
@@ -57,7 +57,7 @@ function treeFromLines(lines: string[]): tree.Node {
     const size = Number(sizeStr);
     data.push([path, size]);
   }
-  let node = tree.treeify(data);
+  let node = tree.treeify(data, colorize);
 
   // If there's a common empty parent, skip it.
   if (node.id === undefined && node.children && node.children.length === 1) {
@@ -100,6 +100,7 @@ function humanSizeCaption(n: tree.Node): string {
 declare interface Args {
   title?: string;
   output?: string;
+  colorize?: string[];
 }
 
 async function main() {
@@ -114,9 +115,10 @@ async function main() {
     )
     .option('-o, --output [path]', 'output to file, not stdout')
     .option('--title [string]', 'title of output HTML')
+    .option('-c, --colorize [string...]', 'space separated list of strings to colorize')
     .parse(process.argv)
     .opts() as Args;
-  const node = treeFromLines(await readLines());
+  const node = treeFromLines(await readLines(), args.colorize);
   const treemapJS = await readFile(__dirname + '/../webtreemap.js');
   const title = args.title || 'webtreemap';
 
